@@ -1,0 +1,116 @@
+name: "web-app"
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    ports:
+      - 8000:80
+    volumes:
+      - ./backend:/var/www/html
+    container_name: nginx
+    links:
+      - php
+    depends_on:
+      - php
+      - redis
+      - mysql
+
+  php:
+    build:
+      context: ./php
+      dockerfile: dockerfile
+    volumes:
+      - ./backend:/var/www/html
+    container_name: php
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:8.4
+    restart: always
+    ports:
+      - 3306:3306
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: laravel
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    command: redis-server --appendonly yes --replica-read-only no
+
+  composer:
+    image: composer:latest
+    volumes:
+      - ./backend:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: ["composer"]
+    depends_on:
+      - php
+
+  artisan:
+    build:
+      context: ./php
+      dockerfile: dockerfile
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    entrypoint: ["php", "artisan"]
+
+  scheduler:
+    build:
+      context: ./php
+      dockerfile: dockerfile
+    container_name: scheduler
+    volumes:
+      - ./backend:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: ["php", "artisan", "schedule:work"]
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    platform: linux/amd64
+    container_name: phpmyadmin
+    depends_on:
+      - mysql
+    ports:
+      - "8891:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=password
+
+  npm:
+    image: node:alpine
+    container_name: npm
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    entrypoint: ["npm"]
+
+  astro:
+    build:
+      context: .
+      dockerfile: ./astro/astro.dev.dockerfile
+    container_name: astro
+    ports:
+      - 80:3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mysql_data:
