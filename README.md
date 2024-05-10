@@ -90,7 +90,7 @@
 # Laravel 11
 一個基於 Laravel 框架的骨架應用程序，旨在幫助您快速啟動開發。項目包含多個強大的套件，可提升您的開發體驗和功能。
 
-## 要求
+## 環境
 
 - **PHP:** ^8.2
 - **框架:** Laravel 11.0
@@ -109,14 +109,18 @@
 - **Ebess/advanced-nova-media-library:** 在 Nova 中使用的媒體檔案[連結][https://github.com/ebess/advanced-nova-media-library]
 
 
+# 下載＆初始化＆執行
+
+## 下載
+git clone --recurse-submodules -j8 https://github.com/royx0612/docker-web-app-development.git <自訂專案名稱>
+
 
 ## 初始化指令
-1. Nova 帳號及 Token檔案生成：docker compose run --rm composer config http-basic.nova.laravel.com nova-account-email@domain.com license-key
-2. 後端套件安裝：docker compose run --rm composer --ignore-platform-reqs i 
+1. 準備 Nova 帳號文件（沒有請購買）：docker compose run --rm composer config http-basic.nova.laravel.com <nova-account@domain.com> <license-key>
+2. 安裝後端 vendor：docker compose run --rm composer --ignore-platform-reqs i 
 3. 後端資料庫初始化：docker compose run --rm artisan migrate
 4. 後端資料帳號建立：docker compose run --rm artisan nova:user
-5. 前端套件安裝：docker compose run --rm npm i
-6. 啟動並建立 images： docker compose build
+5. 安裝前端 node_modules：docker compose run --rm npm i
 
 
 ## 使用指南（務必完成初始化指令）
