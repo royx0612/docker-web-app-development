@@ -1,6 +1,13 @@
-# Web-App Docker 配置
+# Web-App Docker 開發環境
 
-此存儲庫包含基於 Laravel 的網頁應用程序的 Docker 配置。它使用多個服務，包括 Nginx、PHP、MySQL、Redis 等，為您提供完整的開發環境。
+此存儲庫包含基於前後端分離架構下，使用 PHP 8.3 + Laravel 11 作為後端、Astro 4 + Vue 3 作為開發主要語言，資料庫使用 Mysql 8.4，並結合 phpmyadmin；網站服務使用 Nginx；快取使用 Redis 等，提供完整的開發環境。
+
+特色：
+1. 後端主要使用 Laravel/Nova 4 作為後台開發環境（需付費購買）
+2. 後端已安裝 l5-swagger，可從 http://localhost:8000/api/documentation 進入。
+3. 後端已安裝 Spatie/MediaLibrary 套件作為媒體處理/存放套件。
+4. 前後端驗證使用 Laravel/Sanctum。
+
 
 ## 服務概述
 
@@ -98,7 +105,7 @@
 
 ## 套件
 
-### 必需的套件
+### 主要套件介紹
 
 - **Bolechen/nova-activitylog:** 記錄 Nova 中的活動日誌[連結][https://github.com/bolechen/nova-activitylog]
 - **Darkaonline/l5-swagger:** 使用 Swagger 生成 API 文檔[連結][https://github.com/DarkaOnLine/L5-Swagger]
@@ -116,14 +123,14 @@ git clone --recurse-submodules -j8 https://github.com/royx0612/docker-web-app-de
 
 
 ## 初始化指令
-1. 準備 Nova 帳號文件（沒有請購買）：docker compose run --rm composer config http-basic.nova.laravel.com <nova-account@domain.com> <license-key>
-2. 安裝後端 vendor：docker compose run --rm composer --ignore-platform-reqs i 
+1. 準備 Nova 帳號文件（沒有請購買）：docker compose run --rm composer config http-basic.nova.laravel.com nova-account@domain.com token-key（backend 目錄中產生 auth.json）
+2. 安裝後端套件：docker compose run --rm composer --ignore-platform-reqs i 
 3. 後端資料庫初始化：docker compose run --rm artisan migrate
 4. 後端資料帳號建立：docker compose run --rm artisan nova:user
-5. 安裝前端 node_modules：docker compose run --rm npm i
+5. 安裝前端套件：docker compose run --rm npm i
 
 
-## 使用指南（務必完成初始化指令）
+## 使用指南（務必完成初始化）
 
 1. **啟動容器：** 執行 `docker-compose up -d` 啟動所有服務。
 2. **前端網址：** 在瀏覽器中訪問 `http://localhost` 。
