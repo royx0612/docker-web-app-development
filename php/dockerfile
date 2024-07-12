@@ -18,7 +18,13 @@ RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
     && pecl install redis xdebug \
     && docker-php-ext-enable redis xdebug 
 
-# 安裝圖像處理工具和其他所需的工具
+# 安裝 memcached
+RUN apk add --no-cache libmemcached-dev zlib-dev && \
+    pecl install memcached && \
+    docker-php-ext-enable memcached
+
+
+# 安裝圖像處理工具和其他所需的工具（Media Library）
 RUN apk add --no-cache jpegoptim optipng pngquant gifsicle 
 
 # 安裝 supervisor

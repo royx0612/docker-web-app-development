@@ -1,4 +1,4 @@
-name: "web-app"
+name: "web-app-default"
 
 services:
   nginx:
@@ -14,8 +14,6 @@ services:
       - php
     depends_on:
       - php
-      - redis
-      - mysql
 
   php:
     build:
@@ -29,6 +27,8 @@ services:
     depends_on:
       - mysql
       - redis
+      - memcached
+      - supervisor
 
   mysql:
     image: mysql:8.4
@@ -42,7 +42,6 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-
   redis:
     image: redis:alpine
     container_name: redis
@@ -51,12 +50,29 @@ services:
       - 6379:6379
     command: redis-server --appendonly yes --replica-read-only no
 
+  memcached:
+    image: memcached:alpine
+    container_name: memcached
+    restart: unless-stopped
+    ports:
+      - 11211:11211
+
+  supervisor:
+    build:
+      context: ./php
+      dockerfile: dockerfile
+    working_dir: /var/www/html
+    container_name: supervisor
+    command: /usr/bin/supervisord -n -c /etc/supervisor/supervisor.conf
+    volumes:
+      - ./backend:/var/www/html
+
   composer:
     image: composer:latest
     volumes:
       - ./backend:/var/www/html
     working_dir: /var/www/html
-    entrypoint: ["composer"]
+    entrypoint: ["composer", "--ignore-platform-reqs"]
     depends_on:
       - php
 
@@ -68,16 +84,6 @@ services:
     volumes:
       - ./backend:/var/www/html
     entrypoint: ["php", "artisan"]
-
-  supervisor:
-    build:
-      context: ./php
-      dockerfile: dockerfile
-    working_dir: /var/www/html
-    container_name: supervisor
-    command: /usr/bin/supervisord -n -c /etc/supervisor/supervisor.conf
-    volumes:
-      - ./backend:/var/www/html
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
