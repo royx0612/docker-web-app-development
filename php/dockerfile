@@ -2,45 +2,50 @@ FROM php:8.3-fpm-alpine
 
 WORKDIR /var/www/html
 
-RUN apk add --no-cache mysql-client msmtp perl wget procps shadow libzip libpng libjpeg-turbo libwebp freetype icu
+# 安裝基本依賴和 PHP 擴展所需的庫
+RUN apk add --no-cache mysql-client msmtp perl wget procps shadow libzip libpng libjpeg-turbo libwebp freetype icu \
+    && apk add --update linux-headers \
+    && apk add --no-cache --virtual build-essentials \
+        icu-dev icu-libs zlib-dev g++ make automake autoconf libzip-dev \
+        libpng-dev libwebp-dev libjpeg-turbo-dev freetype-dev \
+    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install gd mysqli pdo_mysql intl bcmath opcache exif zip \
+    && apk del build-essentials \
+    && rm -rf /usr/src/php*
 
-RUN apk add --update linux-headers
-
-RUN apk add --no-cache --virtual build-essentials \
-    icu-dev icu-libs zlib-dev g++ make automake autoconf libzip-dev \
-    libpng-dev libwebp-dev libjpeg-turbo-dev freetype-dev && \
-    docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp && \
-    docker-php-ext-install gd && \
-    docker-php-ext-install mysqli && \
-    docker-php-ext-install pdo_mysql && \
-    docker-php-ext-install intl && \
-    docker-php-ext-install bcmath && \
-    docker-php-ext-install opcache && \
-    docker-php-ext-install exif && \
-    docker-php-ext-install zip && \
-    docker-php-ext-install exif && \
-    apk del build-essentials && rm -rf /usr/src/php*
-
+# 安裝 redis 和 xdebug
 RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
     && pecl install redis xdebug \
-    && docker-php-ext-enable redis.so xdebug.so 
+    && docker-php-ext-enable redis xdebug 
 
-RUN apk add --no-cache \
-    jpegoptim \
-    optipng \
-    pngquant \
-    gifsicle \
-    libavif
+# 安裝圖像處理工具和其他所需的工具
+RUN apk add --no-cache jpegoptim optipng pngquant gifsicle 
 
-RUN apk add --no-cache npm \
+# 安裝 supervisor
+RUN apk update && apk add --no-cache supervisor
+
+# 創建目錄
+RUN mkdir -p "/etc/supervisor/conf.d"
+RUN mkdir -p "/etc/supervisor/logs"
+
+# 複製配置文件
+COPY ./supervisor.conf /etc/supervisor/supervisor.conf
+
+
+# 安裝 Node.js 和 svgo
+RUN apk add --no-cache nodejs npm \
     && npm install -g svgo
 
+    # 添加 laravel 用戶組和用戶
 RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
 
-COPY ./php.ini /usr/local/etc/php/php.ini
 
+# 複製配置文件
+COPY ./php.ini /usr/local/etc/php/php.ini
 COPY ./xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
+# 修改文件所有權
 RUN chown -R laravel /var/www/html
+RUN chown -R laravel /etc/supervisor/
 
 USER laravel

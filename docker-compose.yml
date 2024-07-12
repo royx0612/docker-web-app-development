@@ -69,15 +69,15 @@ services:
       - ./backend:/var/www/html
     entrypoint: ["php", "artisan"]
 
-  scheduler:
+  supervisor:
     build:
       context: ./php
       dockerfile: dockerfile
-    container_name: scheduler
+    working_dir: /var/www/html
+    container_name: supervisor
+    command: /usr/bin/supervisord -n -c /etc/supervisor/supervisor.conf
     volumes:
       - ./backend:/var/www/html
-    working_dir: /var/www/html
-    entrypoint: ["php", "artisan", "schedule:work"]
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
