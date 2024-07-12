@@ -55,12 +55,11 @@
 - **工作目錄:** `/var/www/html`
 - **入口點:** `php artisan`
 
-### Scheduler
+### Supervisor
 
-- **容器名稱:** scheduler
+- **容器名稱:** supervisor
 - **卷:** 將 backend 目錄對應到容器內的 `/var/www/html`
 - **工作目錄:** `/var/www/html`
-- **入口點:** `php artisan schedule:work`
 
 ### PhpMyAdmin
 
